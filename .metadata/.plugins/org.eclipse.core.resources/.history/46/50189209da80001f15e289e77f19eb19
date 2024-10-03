@@ -1,0 +1,64 @@
+package com.techlabs.controller;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/app/banks")
+public class BatchController {
+
+    @Autowired
+    private JobLauncher jobLauncher;
+
+    @Autowired
+    private Job exportEmployeeJob;
+
+    @Autowired
+    private Job exportClientJob;
+    
+    @Autowired
+    private Job exportBeneficiaryJob; // Add the beneficiary job here
+
+    @PostMapping("/export-clients")
+    public ResponseEntity<String> exportClients() {
+        try {
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addLong("time", System.currentTimeMillis()) // Add a parameter to make the job unique
+                    .toJobParameters();
+            jobLauncher.run(exportClientJob, jobParameters);
+            return ResponseEntity.ok("Client export job started successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to start client export job: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/export-employees")
+    public ResponseEntity<String> exportEmployees() {
+        try {
+            jobLauncher.run(exportEmployeeJob, new JobParameters());
+            return ResponseEntity.ok("Employee export job started successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to start employee export job: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/export-beneficiaries")
+    public ResponseEntity<String> exportBeneficiaries() {
+        try {
+            JobParameters jobParameters = new JobParametersBuilder()
+                    .addLong("time", System.currentTimeMillis()) // Unique job run ID
+                    .toJobParameters();
+            jobLauncher.run(exportBeneficiaryJob, jobParameters);
+            return ResponseEntity.ok("Beneficiary export job started successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to start beneficiary export job: " + e.getMessage());
+        }
+    }
+}

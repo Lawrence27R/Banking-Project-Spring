@@ -1,0 +1,72 @@
+package com.techlabs.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.techlabs.REPO.ClientRepository;
+import com.techlabs.REPO.DocumentRepository;
+import com.techlabs.entity.Client;
+import com.techlabs.entity.Document;
+
+import io.jsonwebtoken.io.IOException;
+
+@Service
+public class DocumentServiceImpl implements DocumentService {
+
+    @Autowired
+    private Cloudinary cloudinary;
+
+    @Autowired
+    private DocumentRepository documentRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
+
+    @Override
+    public Document uploadKycDocument(MultipartFile file, String type, Long registrationNumber) throws java.io.IOException {
+        try {
+            // Fetch the client by registration number
+            Client client = clientRepository.findById(registrationNumber)
+                    .orElseThrow(() -> new IllegalArgumentException("Client not found with registration number: " + registrationNumber));
+
+            // Upload file to Cloudinary
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap("resource_type", "auto"));
+
+            String url = (String) uploadResult.get("url");
+            String fileName = file.getOriginalFilename();
+
+            // Create a new Document entity
+            Document document = new Document();
+            document.setDocumentName(fileName);
+            document.setDocumentUrl(url); // Set document URL
+            document.setClient(client); // Set client association
+
+            return documentRepository.save(document);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload file to Cloudinary", e);
+        }
+    }
+
+    @Override
+    public List<Document> getCustomerKycDocuments(Long registrationNumber) {
+        // Fetch the client by registration number
+        Client client = clientRepository.findById(registrationNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with registration number: " + registrationNumber));
+
+        return documentRepository.findByClient(client); // Return list of documents associated with the client
+    }
+
+    @Override
+    public Document getDocumentById(int documentId) {
+        // Fetch the document by document ID
+        return documentRepository.findById(documentId)
+                .orElseThrow(() -> new IllegalArgumentException("Document not found with ID: " + documentId));
+    }
+}

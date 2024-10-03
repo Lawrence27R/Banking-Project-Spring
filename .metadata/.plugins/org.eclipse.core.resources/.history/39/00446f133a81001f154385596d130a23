@@ -1,0 +1,5 @@
+package com.techlabs.entity;
+
+public class TransactionRequest {
+
+}

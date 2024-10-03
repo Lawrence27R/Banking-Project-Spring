@@ -1,0 +1,17 @@
+package com.techlabs.service;
+
+import java.util.Optional;
+
+import com.techlabs.entity.Client;
+import com.techlabs.entity.Document;
+import com.techlabs.dto.ClientProfileDto; // Import ClientProfileDto
+
+public interface ClientService {
+    Optional<Client> getClientById(Long registrationNumber);
+    
+    Client updateClientProfile(Long registrationNumber, ClientProfileDto clientProfileDto);
+    
+    Document uploadDocument(Long registrationNumber, Document document);
+    
+    Client registerClient(ClientProfileDto clientDto); // Update registration method
+}

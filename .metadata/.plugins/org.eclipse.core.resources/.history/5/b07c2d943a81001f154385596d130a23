@@ -1,0 +1,22 @@
+package com.techlabs.REPO;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.techlabs.dto.BeneficiaryDTO;
+import com.techlabs.entity.Beneficiary;
+import com.techlabs.entity.Client;
+import com.techlabs.entity.ClientStatus;
+
+@Repository
+public interface ClientRepository extends JpaRepository<Client, Long> {
+	// Custom query methods can be added here if necessary
+	Optional<BeneficiaryDTO> findByRegistrationNumber(Long registrationNumber);
+
+	Optional<Client> findByRegistrationNumber(long registrationNumber);
+
+	List<Client> findByKycStatus(ClientStatus pending);
+}

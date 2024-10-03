@@ -1,0 +1,20 @@
+package com.techlabs.config;
+
+import org.springframework.batch.item.file.mapping.FieldSetMapper;
+import org.springframework.batch.item.file.transform.FieldSet;
+
+import com.techlabs.entity.Beneficiary;
+
+public class BeneficiaryFieldSetMapper implements FieldSetMapper<Beneficiary> {
+
+    @Override
+    public Beneficiary mapFieldSet(FieldSet fieldSet) {
+        Beneficiary beneficiary = new Beneficiary();
+        beneficiary.setBeneficiaryName(fieldSet.readString("beneficiaryName"));
+        beneficiary.setBeneficiaryAccountNumber(fieldSet.readLong("beneficiaryAccountNumber"));
+        beneficiary.setBeneficiaryIfsc(fieldSet.readString("beneficiaryIfsc"));
+        beneficiary.setBeneficiaryAmount(fieldSet.readDouble("beneficiaryAmount"));
+        // Client field should be handled separately if needed since it's a relationship to another entity
+        return beneficiary;
+    }
+}

@@ -1,0 +1,6 @@
+package com.techlabs.entity;
+
+public enum TransactionRequestTupe {
+	BENEFICIARY_PAYMENT,
+    SALARY_DISBURSEMENT
+}

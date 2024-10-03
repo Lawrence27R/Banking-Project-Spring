@@ -1,0 +1,9 @@
+package com.techlabs.REPO;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.techlabs.entity.Customer;
+
+public interface CustomerRepo extends JpaRepository<Customer, Integer>{
+
+}

@@ -1,0 +1,188 @@
+package com.techlabs.config;
+
+import javax.sql.DataSource;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
+import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+
+import com.techlabs.entity.Beneficiary;
+import com.techlabs.entity.Client;
+import com.techlabs.entity.ClientStatus;
+import com.techlabs.entity.Employee;
+
+@Configuration
+public class BatchConfiguration {
+
+    // Employee Batch Configuration
+
+    @Bean
+    public JdbcCursorItemReader<Employee> employeeReader(DataSource dataSource) {
+        return new JdbcCursorItemReaderBuilder<Employee>()
+                .dataSource(dataSource)
+                .name("employeeReader")
+                .sql("SELECT employee_id, first_name, last_name, email, salary, account_number FROM employee")
+                .rowMapper((rs, rowNum) -> {
+                    Employee employee = new Employee();
+                    employee.setEmployeeId(rs.getInt("employee_id"));
+                    employee.setFirstName(rs.getString("first_name"));
+                    employee.setLastName(rs.getString("last_name"));
+                    employee.setEmail(rs.getString("email"));
+                    employee.setSalary(rs.getDouble("salary"));
+                    employee.setAccountNumber(rs.getLong("account_number"));
+                    return employee;
+                })
+                .build();
+    }
+
+    @Bean
+    public FlatFileItemWriter<Employee> employeeWriter() {
+        return new FlatFileItemWriterBuilder<Employee>()
+                .name("employeeCsvWriter")
+                .resource(new FileSystemResource("output/employees.csv"))
+                .delimited()
+                .delimiter(",")
+                .names("firstName", "lastName", "email", "accountNumber", "salary")
+                .headerCallback(writer -> writer.write("firstName,lastName,email,accountNumber,salary"))
+                .build();
+    }
+
+    @Bean
+    public Step employeeStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
+                             JdbcCursorItemReader<Employee> reader, FlatFileItemWriter<Employee> writer) {
+        return new StepBuilder("employeeStep", jobRepository)
+                .<Employee, Employee>chunk(10, transactionManager)
+                .reader(reader)
+                .writer(writer)
+                .build();
+    }
+
+    @Bean
+    public Job exportEmployeeJob(JobRepository jobRepository, Step employeeStep) {
+        return new JobBuilder("exportEmployeeJob", jobRepository)
+                .start(employeeStep)
+                .build();
+    }
+
+    // Client Batch Configuration
+
+    @Bean
+    public JdbcCursorItemReader<Client> clientReader(DataSource dataSource) {
+        return new JdbcCursorItemReaderBuilder<Client>()
+                .dataSource(dataSource)
+                .name("clientReader")
+                .sql("SELECT registration_number, client_name, status, email, state, city, account_number, username FROM client")
+                .rowMapper((rs, rowNum) -> {
+                    Client client = new Client();
+                    client.setRegistrationNumber(rs.getInt("registration_number"));
+                    client.setClientName(rs.getString("client_name"));
+                    
+                    // Assuming the DB values match the enum names
+                    String statusValue = rs.getString("status");
+                    System.out.println("Status value from DB: " + statusValue); // Debug line
+                    client.setStatus(ClientStatus.valueOf(statusValue)); // Use ClientStatus enum
+                    
+                    client.setEmail(rs.getString("email"));
+                    client.setState(rs.getString("state"));
+                    client.setCity(rs.getString("city"));
+                    client.setAccountNumber(rs.getLong("account_number"));
+                    client.setUsername(rs.getString("username"));
+                    return client;
+                })
+                .build();
+    }
+
+
+    @Bean
+    public FlatFileItemWriter<Client> clientWriter() {
+        return new FlatFileItemWriterBuilder<Client>()
+                .name("clientCsvWriter")
+                .resource(new FileSystemResource("output/clients.csv"))
+                .delimited()
+                .delimiter(",")
+                .names("registrationNumber", "clientName", "status", "email", "state", "city", "accountNumber", "username")
+                .headerCallback(writer -> writer.write("registrationNumber,clientName,status,email,state,city,accountNumber,username"))
+                .build();
+    }
+
+    @Bean
+    public Step clientStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
+                           JdbcCursorItemReader<Client> reader, FlatFileItemWriter<Client> writer) {
+        return new StepBuilder("clientStep", jobRepository)
+                .<Client, Client>chunk(10, transactionManager)
+                .reader(reader)
+                .writer(writer)
+                .build();
+    }
+
+    @Bean
+    public Job exportClientJob(JobRepository jobRepository, Step clientStep) {
+        return new JobBuilder("exportClientJob", jobRepository)
+                .start(clientStep)
+                .build();
+    }
+
+    // Beneficiary Batch Configuration
+
+    @Bean
+    public JdbcCursorItemReader<Beneficiary> beneficiaryReader(DataSource dataSource) {
+        return new JdbcCursorItemReaderBuilder<Beneficiary>()
+                .dataSource(dataSource)
+                .name("beneficiaryReader")
+                .sql("SELECT beneficiary_name, beneficiary_account_number, beneficiary_ifsc, beneficiary_amount, client_registration_number FROM beneficiary")
+                .rowMapper((rs, rowNum) -> {
+                    Beneficiary beneficiary = new Beneficiary();
+                    beneficiary.setBeneficiaryName(rs.getString("beneficiary_name"));
+                    beneficiary.setBeneficiaryAccountNumber(rs.getString("beneficiary_account_number"));
+                    beneficiary.setBeneficiaryIfsc(rs.getString("beneficiary_ifsc"));
+                    beneficiary.setBeneficiaryAmount(rs.getDouble("beneficiary_amount"));
+                    return beneficiary;
+                })
+                .build();
+    }
+
+    @Bean
+    public FlatFileItemWriter<Beneficiary> beneficiaryWriter() {
+        return new FlatFileItemWriterBuilder<Beneficiary>()
+                .name("beneficiaryCsvWriter")
+                .resource(new FileSystemResource("output/beneficiaries.csv"))
+                .delimited()
+                .delimiter(",")
+                .names("beneficiaryName", "beneficiaryAccountNumber", "beneficiaryIfsc", "beneficiaryAmount", "clientRegistrationNumber")
+                .headerCallback(writer -> writer.write("beneficiaryName,beneficiaryAccountNumber,beneficiaryIfsc,beneficiaryAmount,clientRegistrationNumber"))
+                .build();
+    }
+
+    @Bean
+    public Step beneficiaryStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
+                                JdbcCursorItemReader<Beneficiary> reader, FlatFileItemWriter<Beneficiary> writer) {
+        return new StepBuilder("beneficiaryStep", jobRepository)
+                .<Beneficiary, Beneficiary>chunk(10, transactionManager)
+                .reader(reader)
+                .writer(writer)
+                .build();
+    }
+
+    @Bean
+    public Job exportBeneficiaryJob(JobRepository jobRepository, Step beneficiaryStep) {
+        return new JobBuilder("exportBeneficiaryJob", jobRepository)
+                .start(beneficiaryStep)
+                .build();
+    }
+
+    @Bean
+    public DataSourceTransactionManager transactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+}
+

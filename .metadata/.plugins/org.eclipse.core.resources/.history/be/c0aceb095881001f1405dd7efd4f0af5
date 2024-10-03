@@ -1,0 +1,77 @@
+package com.techlabs.service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.techlabs.REPO.RoleRepo;
+import com.techlabs.REPO.UserRepo;
+import com.techlabs.dto.LoginDto;
+import com.techlabs.dto.RegisterDto;
+import com.techlabs.entity.Role;
+import com.techlabs.entity.User;
+import com.techlabs.exceptions.UserApiException;
+import com.techlabs.security.JwtTokenProvider;
+
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Service
+public class AuthServiceImpl implements AuthService {
+	@Autowired
+	private AuthenticationManager authenticationmanager;
+	@Autowired
+	private UserRepo userRepo;
+	@Autowired
+	private RoleRepo roleRepo;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private JwtTokenProvider tokenProvider;
+
+	@Override
+	 public User register(RegisterDto registerDto) {
+	     if (userRepo.existsByUsername(registerDto.getUsername())) {
+	         throw new UserApiException(HttpStatus.BAD_REQUEST, "User already exists");
+	     }
+
+	     User user = new User();
+	     user.setUsername(registerDto.getUsername());
+	     user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
+
+	     List<Role> roles = new ArrayList<>();
+
+	     Role userRole = roleRepo.findByRoleName(registerDto.getRole()).get();
+	     roles.add(userRole);
+	     user.setRoles(roles);
+
+	     return userRepo.save(user);
+	 }
+	@Override
+	 public String login(LoginDto loginDto) {
+	     try {
+	         Authentication authentication = authenticationmanager.authenticate(
+	                 new UsernamePasswordAuthenticationToken(
+	                         loginDto.getUsername(), loginDto.getPassword())
+	         );
+	         SecurityContextHolder.getContext().setAuthentication(authentication);
+	         String token = tokenProvider.generateToken(authentication);
+
+	         return token;
+	     } catch (BadCredentialsException e) {
+	         throw new UserApiException(HttpStatus.NOT_FOUND, "Username or Password is incorrect");
+	     }
+	 }
+
+}

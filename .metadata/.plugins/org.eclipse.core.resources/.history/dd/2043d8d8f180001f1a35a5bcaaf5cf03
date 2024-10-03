@@ -1,0 +1,70 @@
+package com.techlabs.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.techlabs.dto.BankDto;
+import com.techlabs.dto.ClientProfileDto;
+import com.techlabs.entity.Bank;
+import com.techlabs.entity.Client;
+import com.techlabs.entity.Document;
+import com.techlabs.service.BankService;
+import com.techlabs.service.ClientService;
+
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+
+@RestController
+@RequestMapping("/app")
+@AllArgsConstructor
+public class ClientController {
+
+	@Autowired
+    private final ClientService clientService;
+    
+    @Autowired
+    private final BankService bankService;
+
+    @PutMapping("/{registrationNumber}")
+    public ResponseEntity<Client> updateClientProfile(
+            @PathVariable Long registrationNumber,
+            @Valid @RequestBody ClientProfileDto clientProfileDto) {
+        Client updatedClient = clientService.updateClientProfile(registrationNumber, clientProfileDto);
+        return ResponseEntity.ok(updatedClient);
+    }
+
+    @PostMapping("/{registrationNumber}/documents")
+    public ResponseEntity<Document> uploadDocument(
+            @PathVariable Long registrationNumber,
+            @Valid @RequestBody Document document) {
+        Document savedDocument = clientService.uploadDocument(registrationNumber, document);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedDocument);
+    }
+    
+    @PostMapping 
+    public ResponseEntity<Bank> addBank(@RequestBody BankDto bankDto) { 
+        Bank savedBank = bankService.addBank(bankDto); 
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedBank); 
+    }
+
+    @PutMapping("/{registrationNumber}/kyc-status")
+    public ResponseEntity<Client> updateClientKycStatus(
+            @PathVariable Long registrationNumber, 
+            @RequestBody ClientStatusUpdateDto statusUpdateDto) {
+        Client updatedClient = clientService.updateClientKycStatus(registrationNumber, statusUpdateDto.getStatus());
+        return ResponseEntity.ok(updatedClient);
+    }
+
+}
+
