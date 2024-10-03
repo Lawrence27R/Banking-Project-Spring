@@ -31,8 +31,6 @@ public class Bank {
 	@NotBlank(message = "IFSC code is mandatory")
 	private String ifscCode;
 
-//	@Column(name = "account_number", unique = true, nullable = false)
-//	private Long accountNumber;
 
 	@JsonManagedReference
 	@OneToOne

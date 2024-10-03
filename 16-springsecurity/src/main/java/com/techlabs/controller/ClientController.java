@@ -19,6 +19,7 @@ import com.techlabs.dto.ClientProfileDto;
 import com.techlabs.dto.ClientStatusUpdateDto;
 import com.techlabs.entity.Bank;
 import com.techlabs.entity.Client;
+import com.techlabs.entity.ClientStatus;
 import com.techlabs.entity.Document;
 import com.techlabs.service.BankService;
 import com.techlabs.service.ClientService;
@@ -62,7 +63,7 @@ public class ClientController {
     @GetMapping("/kyc-status")
     @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
     public ResponseEntity<List<Client>> getPendingKycClients() {
-        List<Client> clients = clientService.getClientsByKycStatus();
+        List<Client> clients = clientService.getClientsByKycStatus(ClientStatus.PENDING);
         if (clients.isEmpty()) {
             return ResponseEntity.noContent().build(); // Return 204 No Content if no clients are found
         }

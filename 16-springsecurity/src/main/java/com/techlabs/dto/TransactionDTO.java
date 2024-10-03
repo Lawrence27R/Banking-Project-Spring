@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class TransactionDTO {
-	 private long beneficiaryAccountNumber; 
-	    private long registrationNumber; 
-	    private double amount; 
+    private long beneficiaryAccountNumber; 
+    private long clientAccountNumber; 
+    private double amount; 
 }

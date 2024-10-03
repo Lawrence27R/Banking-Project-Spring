@@ -1,0 +1,32 @@
+package com.techlabs.REPO;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.techlabs.dto.BeneficiaryDTO;
+import com.techlabs.entity.Client;
+import com.techlabs.entity.ClientStatus;
+
+@Repository
+public interface ClientRepository extends JpaRepository<Client, Long> {
+
+    // Fetch a BeneficiaryDTO by registration number
+    @Query("SELECT new com.techlabs.dto.BeneficiaryDTO(bp.beneficiaryId, bp.beneficiaryName, bp.beneficiaryAccountNumber, bp.beneficiaryIfsc, bp.balance, c.registrationNumber) " +
+           "FROM Beneficiary bp JOIN bp.client c " +
+           "WHERE c.registrationNumber = :registrationNumber")
+    Optional<BeneficiaryDTO> findBeneficiaryDTOByRegistrationNumber(@Param("registrationNumber") Long registrationNumber);
+
+    // Fetch a Client by registration number
+    Optional<Client> findByRegistrationNumber(Long registrationNumber);
+
+    // Fetch a list of clients by KYC status
+    List<Client> findByKycStatus(ClientStatus status);
+}
+
+
+

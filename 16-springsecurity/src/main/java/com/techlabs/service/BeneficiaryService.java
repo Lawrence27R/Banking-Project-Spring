@@ -19,5 +19,4 @@ public interface BeneficiaryService {
 
 	void deleteBeneficiary(Integer beneficiaryId);
 
-	
 }

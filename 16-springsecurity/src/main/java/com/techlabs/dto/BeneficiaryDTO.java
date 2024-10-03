@@ -12,22 +12,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BeneficiaryDTO {
-	
-	@NotNull(message = "Beneficiary ID is required")
-	private int beneficiaryId; // Or Long beneficiaryId if you expect nullable
-	
-	@NotBlank(message = "Beneficiary name is required")
-	private String beneficiaryName;
-	
-	@NotNull(message = "Beneficiary account number is required")
-	private long beneficiaryAccountNumber;
-	
-	@NotBlank(message = "IFSC code is required")
-	private String beneficiaryIfsc;
-	
-	@NotNull(message = "Beneficiary amount is required")
-	@Positive(message = "Beneficiary amount must be positive")
-	private double beneficiaryAmount;
-	
-	private Long registrationNumber; 
+    
+    @NotNull(message = "Beneficiary ID is required")
+    private Integer beneficiaryId;  // Use Integer to match with the entity if it's not Long
+    
+    @NotBlank(message = "Beneficiary name is required")
+    private String beneficiaryName;
+    
+    @NotNull(message = "Beneficiary account number is required")
+    private Long beneficiaryAccountNumber;
+    
+    @NotBlank(message = "IFSC code is required")
+    private String beneficiaryIfsc;
+    
+    @NotNull(message = "Beneficiary balance is required")
+    @Positive(message = "Beneficiary balance must be positive")
+    private Double balance;  // Consistent naming with the entity's `balance` field
+    
+    @NotNull(message = "Client registration number is required")
+    private Long registrationNumber; // Client's registration number
 }
+
+

@@ -15,9 +15,10 @@ public interface ClientService {
     
     Document uploadDocument(Long registrationNumber, Document document);
     
-    Client registerClient(ClientProfileDto clientDto); // Update registration method
+    Client registerClient(ClientProfileDto clientDto); // Method for registering a new client
     
-    List<Client> getClientsByKycStatus();
+    List<Client> getClientsByKycStatus(ClientStatus status); // Accept status to filter clients
     
     Client updateClientKycStatus(Long registrationNumber, ClientStatus status); 
 }
+

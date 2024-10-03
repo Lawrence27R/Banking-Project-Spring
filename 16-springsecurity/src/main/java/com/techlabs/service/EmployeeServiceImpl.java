@@ -12,77 +12,96 @@ import com.techlabs.REPO.EmployeeRepository;
 import com.techlabs.dto.EmployeeDto;
 import com.techlabs.entity.Client;
 import com.techlabs.entity.Employee;
+import com.techlabs.exceptions.ClientNotFoundException;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
+@Transactional // Ensures transaction management
 public class EmployeeServiceImpl implements EmployeeService {
 
-	@Autowired
-	private EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
-	@Autowired
-	private ClientRepository clientRepository;
+    @Autowired
+    private ClientRepository clientRepository;
 
-	private EmployeeDto convertToDto(Employee employee) {
-		return new EmployeeDto(employee.getEmployeeId(), employee.getFirstname(), employee.getLastname(),
-				employee.getSalary(), employee.getAccountnumber(), employee.getEmail(),
-				employee.getClient().getRegistrationNumber());
-	}
+    private EmployeeDto convertToDto(Employee employee) {
+        return new EmployeeDto(
+                employee.getEmployeeId(),
+                employee.getFirstname(),
+                employee.getLastname(),
+                employee.getSalary(),
+                employee.getAccountnumber(),
+                employee.getBalance(), // Include balance in DTO conversion
+                employee.getEmail(),
+                employee.getClient().getRegistrationNumber()
+        );
+    }
 
-	private Employee convertToEntity(EmployeeDto employeeDto, Client client) {
-		Employee employee = new Employee();
-		employee.setFirstname(employeeDto.getFirstname());
-		employee.setLastname(employeeDto.getLastname());
-		employee.setSalary(employeeDto.getSalary());
-		employee.setAccountnumber(employeeDto.getAccountnumber());
-		employee.setEmail(employeeDto.getEmail());
-		employee.setClient(client);
-		return employee;
-	}
+    private Employee convertToEntity(EmployeeDto employeeDto, Client client) {
+        Employee employee = new Employee();
+        employee.setFirstname(employeeDto.getFirstname());
+        employee.setLastname(employeeDto.getLastname());
+        employee.setSalary(employeeDto.getSalary());
+        employee.setAccountnumber(employeeDto.getAccountnumber());
+        employee.setBalance(employeeDto.getBalance()); // Include balance from DTO
+        employee.setEmail(employeeDto.getEmail());
+        employee.setClient(client);
+        return employee;
+    }
 
-	@Override
-	public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
-		Optional<Client> clientOpt = clientRepository.findById(employeeDto.getClientRegistrationNumber());
-		if (!clientOpt.isPresent()) {
-			throw new RuntimeException("Client not found");
-		}
+    @Override
+    public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
+        Client client = clientRepository.findById(employeeDto.getClientRegistrationNumber())
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
-		Employee employee = convertToEntity(employeeDto, clientOpt.get());
-		Employee savedEmployee = employeeRepository.save(employee);
-		return convertToDto(savedEmployee);
-	}
+        Employee employee = convertToEntity(employeeDto, client);
+        Employee savedEmployee = employeeRepository.save(employee);
+        return convertToDto(savedEmployee);
+    }
 
-	@Override
-	public List<EmployeeDto> getAllEmployees() {
-		List<Employee> employees = employeeRepository.findAll();
-		return employees.stream().map(this::convertToDto).collect(Collectors.toList());
-	}
+    @Override
+    public List<EmployeeDto> getAllEmployees() {
+        List<Employee> employees = employeeRepository.findAll();
+        return employees.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
 
-	@Override
-	public Optional<EmployeeDto> getEmployeeById(int employeeId) {
-		Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
-		return employeeOpt.map(this::convertToDto);
-	}
+    @Override
+    public Optional<EmployeeDto> getEmployeeById(int employeeId) {
+        return employeeRepository.findById(employeeId).map(this::convertToDto);
+    }
 
-	@Override
-	public EmployeeDto updateEmployee(int employeeId, EmployeeDto employeeDto) {
-		Optional<Employee> employeeOpt = employeeRepository.findById(employeeId);
-		if (!employeeOpt.isPresent()) {
-			throw new RuntimeException("Employee not found");
-		}
+    @Override
+    public EmployeeDto updateEmployee(int employeeId, EmployeeDto employeeDto) {
+        Employee existingEmployee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
-		Optional<Client> clientOpt = clientRepository.findById(employeeDto.getClientRegistrationNumber());
-		if (!clientOpt.isPresent()) {
-			throw new RuntimeException("Client not found");
-		}
+        Client client = clientRepository.findById(employeeDto.getClientRegistrationNumber())
+        		.orElseThrow(() -> new ClientNotFoundException("Client not found"));
 
-		Employee employee = convertToEntity(employeeDto, clientOpt.get());
-		employee.setEmployeeId(employeeId); // Ensure the correct ID is set
-		Employee updatedEmployee = employeeRepository.save(employee);
-		return convertToDto(updatedEmployee);
-	}
 
-	@Override
-	public void deleteEmployee(int employeeId) {
-		employeeRepository.deleteById(employeeId);
-	}
+        // Update existing employee fields
+        existingEmployee.setFirstname(employeeDto.getFirstname());
+        existingEmployee.setLastname(employeeDto.getLastname());
+        existingEmployee.setSalary(employeeDto.getSalary());
+        existingEmployee.setAccountnumber(employeeDto.getAccountnumber());
+        existingEmployee.setBalance(employeeDto.getBalance()); // Update balance
+        existingEmployee.setEmail(employeeDto.getEmail());
+        existingEmployee.setClient(client);
+
+        Employee updatedEmployee = employeeRepository.save(existingEmployee);
+        return convertToDto(updatedEmployee);
+    }
+
+    @Override
+    public void deleteEmployee(int employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new EntityNotFoundException("Employee not found");
+        }
+        employeeRepository.deleteById(employeeId);
+    }
 }
+
+

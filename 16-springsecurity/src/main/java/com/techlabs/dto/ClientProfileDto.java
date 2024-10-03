@@ -1,15 +1,15 @@
 package com.techlabs.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data // This generates getters, setters, and other utility methods
+@Data
 @AllArgsConstructor
-@NoArgsConstructor // Add this if you want a no-args constructor
+@NoArgsConstructor
 public class ClientProfileDto {
 
     @NotNull(message = "Registration number is mandatory")
@@ -27,7 +27,12 @@ public class ClientProfileDto {
     @NotBlank(message = "City is mandatory")
     private String city;
 
-    @Column(name = "account_number", unique = true, nullable = false)
-	private Long accountNumber;
-    
+    @NotNull(message = "Account number is mandatory")
+    @Positive(message = "Account number must be positive")
+    private Long accountNumber;
+
+    @NotNull(message = "Balance is mandatory")
+    @Positive(message = "Balance must be positive")
+    private Double balance;
 }
+

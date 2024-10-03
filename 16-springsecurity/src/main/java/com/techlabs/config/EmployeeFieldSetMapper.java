@@ -16,6 +16,7 @@ public class EmployeeFieldSetMapper implements FieldSetMapper<Employee> {
         employee.setEmail(fieldSet.readString("email"));
         employee.setAccountnumber(fieldSet.readLong("accountnumber"));
         employee.setSalary(fieldSet.readDouble("salary"));
+        employee.setBalance(fieldSet.readDouble("balance"));
         return employee;
     }
 }

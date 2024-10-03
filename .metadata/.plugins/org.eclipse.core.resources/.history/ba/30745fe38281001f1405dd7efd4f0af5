@@ -1,0 +1,15 @@
+package com.techlabs.config;
+
+import org.springframework.batch.item.ItemProcessor;
+
+import com.techlabs.entity.EmployeeTransaction;
+
+public class EmployeeProcessor implements ItemProcessor<EmployeeTransaction, EmployeeTransaction> {
+
+	@Override
+	public EmployeeTransaction process(EmployeeTransaction item) throws Exception {
+	    // Log the incoming item to verify that data is being processed
+	    System.out.println("Processing: " + item);
+	    return item;
+	}
+}

@@ -13,6 +13,5 @@ public class BankDto {
 
 	private String ifscCode;
 
-	// Client registration number to set the relationship
 	private Long clientRegistrationNumber;
 }

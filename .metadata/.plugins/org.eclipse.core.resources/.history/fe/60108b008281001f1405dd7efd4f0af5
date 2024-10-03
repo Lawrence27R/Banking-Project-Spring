@@ -1,0 +1,14 @@
+package com.techlabs.config;
+
+import org.springframework.batch.item.ItemProcessor;
+
+import com.techlabs.entity.EmployeeTransaction;
+
+public class EmployeeProcessor implements ItemProcessor<EmployeeTransaction, EmployeeTransaction> {
+
+    @Override
+    public EmployeeTransaction process(EmployeeTransaction item) throws Exception {
+        // You can apply any transformation logic here if needed
+        return item;
+    }
+}

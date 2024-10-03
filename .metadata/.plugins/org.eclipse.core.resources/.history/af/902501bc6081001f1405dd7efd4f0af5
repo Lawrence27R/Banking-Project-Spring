@@ -1,0 +1,41 @@
+package com.techlabs.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@RequiredArgsConstructor
+public class EmployeeDto {
+
+    private int employeeId; // We usually keep the ID to help with updates or lookups
+
+    @NotBlank(message = "First Name is mandatory")
+    private String firstname;
+
+    @NotBlank(message = "Last Name is mandatory")
+    private String lastname;
+
+    @NotNull(message = "Salary is mandatory")
+    @Positive(message = "Salary must be positive")
+    private Double salary;
+
+    @NotNull(message = "Account number is mandatory")
+    private Long accountnumber;
+
+    @Email(message = "Email should be valid")
+    @NotBlank(message = "Email is mandatory")
+    private String email;
+
+    @NotNull(message = "Balance is mandatory")
+    @Positive(message = "Balance must be positive")
+    private Double balance; // Added the balance field
+
+    private Long clientRegistrationNumber; // Instead of the entire Client object, we use the client's registration number for simplicity
+}
+

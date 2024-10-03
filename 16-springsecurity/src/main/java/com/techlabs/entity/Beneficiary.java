@@ -23,30 +23,32 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "beneficiaries")
 public class Beneficiary {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "beneficiary_id")
-	private int beneficiaryId;
-	
-	@NotBlank(message = "Beneficiary name is required")
-	@Column(name = "beneficiary_name", nullable = false)
-	private String beneficiaryName;
-	
-	@NotNull(message = "Beneficiary account number is required")
-	@Column(name = "beneficiary_account_number", nullable = false, unique = true)
-	private long beneficiaryAccountNumber;
-	
-	@NotBlank(message = "IFSC code is required")
-	@Column(name = "beneficiary_ifsc", nullable = false)
-	private String beneficiaryIfsc;
-	
-	@NotNull(message = "Beneficiary amount is required")
-	@Positive(message = "Beneficiary amount must be positive")
-	@Column(name = "beneficiary_amount", nullable = false)
-	private double beneficiaryAmount;
-	
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "beneficiary_id")
+    private int beneficiaryId;
+
+    @NotBlank(message = "Beneficiary name is required")
+    @Column(name = "beneficiary_name", nullable = false)
+    private String beneficiaryName;
+
+    @NotNull(message = "Beneficiary account number is required")
+    @Column(name = "beneficiary_account_number", nullable = false, unique = true)
+    private long beneficiaryAccountNumber;
+
+    @NotBlank(message = "IFSC code is required")
+    @Column(name = "beneficiary_ifsc", nullable = false)
+    private String beneficiaryIfsc;
+
+    @NotNull(message = "Beneficiary balance is required")
+    @Positive(message = "Beneficiary balance must be positive")
+    @Column(name = "balance", nullable = false)
+    private double balance;
+
     @ManyToOne
     @JoinColumn(name = "client_registrationNumber", nullable = false)
     @JsonBackReference
     private Client client;
 }
+

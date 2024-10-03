@@ -1,0 +1,86 @@
+package com.techlabs.service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.techlabs.REPO.BeneficiaryRepository;
+import com.techlabs.REPO.ClientRepository;
+import com.techlabs.REPO.TransactionRepository;
+import com.techlabs.dto.TransactionDTO;
+import com.techlabs.entity.Beneficiary;
+import com.techlabs.entity.Client;
+import com.techlabs.entity.Transaction;
+import com.techlabs.entity.TransactionType;
+
+import jakarta.transaction.Transactional; 
+
+@Service 
+public class TransactionServiceImpl implements TransactionService { 
+
+    @Autowired 
+    private TransactionRepository transactionRepository; 
+
+    @Autowired 
+    private BeneficiaryRepository beneficiaryRepository; 
+
+    @Autowired 
+    private ClientRepository clientRepository; 
+
+    @Transactional 
+    @Override 
+    public Transaction createTransaction(TransactionDTO transactionDTO) {
+        // Validate input parameters 
+        if (transactionDTO.getAmount() <= 0) { 
+            throw new IllegalArgumentException("Amount must be positive."); 
+        } 
+
+        // Retrieve beneficiary and client 
+        Beneficiary beneficiary = beneficiaryRepository.findByBeneficiaryAccountNumber(transactionDTO.getBeneficiaryAccountNumber()) 
+                .orElseThrow(() -> new IllegalArgumentException("Beneficiary not found")); 
+
+        Client client = clientRepository.findByRegistrationNumber(transactionDTO.getClientAccountNumber()) 
+                .orElseThrow(() -> new IllegalArgumentException("Client not found")); 
+
+        // Create and populate the Transaction entity 
+        Transaction transaction = new Transaction(); 
+        transaction.setSenderAcct(client.getAccountNumber()); 
+        transaction.setReceiverAcct(beneficiary.getBeneficiaryAccountNumber())); 
+        transaction.setAmount(transactionDTO.getAmount()); 
+        transaction.setTransaction(TransactionType.TRANSFER);
+        transaction.setTimestamp(LocalDateTime.now()); 
+        transaction.setClient(client); 
+        // Save the transaction to the database 
+        return transactionRepository.save(transaction); 
+    }
+
+    @Override 
+    public Optional<Transaction> findTransactionById(Integer transactionId) { 
+        return transactionRepository.findById(transactionId); 
+    } 
+
+    @Override 
+    public List<Transaction> findAllTransactions() { 
+        return transactionRepository.findAll(); 
+    } 
+
+    @Override 
+    public List<Transaction> findByBeneficiaryAccountNumber(Long beneficiaryAccountNumber) { 
+        // Ensure this method is checking the correct type
+        Beneficiary beneficiary = beneficiaryRepository.findByBeneficiaryAccountNumber(beneficiaryAccountNumber) 
+                .orElseThrow(() -> new IllegalArgumentException("Beneficiary not found")); 
+
+        return transactionRepository.findByReceiverAcct(beneficiary.getBeneficiaryAccountNumber()); 
+    } 
+
+    @Override 
+    public List<Transaction> findByRegistrationNumber(long registrationNumber) { 
+        Client client = clientRepository.findByRegistrationNumber(registrationNumber) 
+                .orElseThrow(() -> new IllegalArgumentException("Client not found")); 
+
+        return transactionRepository.findBySenderAcct(client.getAccountNumber()); 
+    } 
+}

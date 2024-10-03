@@ -1,0 +1,5 @@
+firstname,lastname,email,accountnumber,salary,balance
+Alice,Smith,alice.smith@example.com,1234567890,60000.0,5000.5
+Bob,Johnson,bob.johnson@example.com,1234567891,55000.0,4500.75
+Charlie,Brown,charlie.brown@example.com,1234567892,70000.0,6000.0
+David,Williams,david.williams@example.com,1234567893,65000.0,5500.25

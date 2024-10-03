@@ -1,0 +1,9 @@
+package com.techlabs.config;
+
+@Override
+public EmployeeTransaction process(EmployeeTransaction item) throws Exception {
+    // Log the incoming item to verify that data is being processed
+    System.out.println("Processing: " + item);
+    return item;
+}
+

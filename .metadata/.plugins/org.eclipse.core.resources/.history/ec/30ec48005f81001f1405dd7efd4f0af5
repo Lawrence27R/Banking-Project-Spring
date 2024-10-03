@@ -1,0 +1,35 @@
+package com.techlabs.dto;
+
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class BeneficiaryDTO {
+    
+    @NotNull(message = "Beneficiary ID is required")
+    private Long beneficiaryId;  // Use Long instead of int if you expect it to be nullable
+    
+    @NotBlank(message = "Beneficiary name is required")
+    private String beneficiaryName;
+    
+    @NotNull(message = "Beneficiary account number is required")
+    private Long beneficiaryAccountNumber;
+    
+    @NotBlank(message = "IFSC code is required")
+    private String beneficiaryIfsc;
+    
+    @NotNull(message = "Beneficiary amount is required")
+    @Positive(message = "Beneficiary amount must be positive")
+    private Double balance;
+    
+    @NotNull(message = "Client registration number is required")
+    private Long registrationNumber; // Assuming this links to the client entity
+}
+

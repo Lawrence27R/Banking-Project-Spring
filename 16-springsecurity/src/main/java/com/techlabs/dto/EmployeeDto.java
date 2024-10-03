@@ -13,25 +13,42 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EmployeeDto {
 
-	private int employeeId; // We usually keep the ID to help with updates or lookups
+    private int employeeId; // For updates or lookups
 
-	@NotBlank(message = "First Name is mandatory")
-	private String firstname;
+    @NotBlank(message = "First Name is mandatory")
+    private String firstname;
 
-	@NotBlank(message = "Last Name is mandatory")
-	private String lastname;
+    @NotBlank(message = "Last Name is mandatory")
+    private String lastname;
 
-	@NotNull(message = "Salary is mandatory")
-	@Positive(message = "Salary must be positive")
-	private Double salary;
+    @NotNull(message = "Salary is mandatory")
+    @Positive(message = "Salary must be positive")
+    private Double salary;
 
-	@NotNull(message = "Account number is mandatory")
-	private Long accountnumber;
+    @NotNull(message = "Account number is mandatory")
+    private Long accountnumber;
 
-	@Email(message = "Email should be valid")
-	@NotBlank(message = "Email is mandatory")
-	private String email;
+    @Email(message = "Email should be valid")
+    @NotBlank(message = "Email is mandatory")
+    private String email;
 
-	private Long clientRegistrationNumber; // Instead of the entire Client object, we use the client's registration
-											// number for simplicity
+    @NotNull(message = "Balance is mandatory")
+    @Positive(message = "Balance must be positive")
+    private double balance;  // Added balance field
+
+    private Long clientRegistrationNumber;
+
+    // Explicit constructor to match the one needed in EmployeeServiceImpl
+    public EmployeeDto(int employeeId, String firstname, String lastname, Double salary, Long accountnumber, double balance, String email, Long clientRegistrationNumber) {
+        this.employeeId = employeeId;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.salary = salary;
+        this.accountnumber = accountnumber;
+        this.balance = balance;
+        this.email = email;
+        this.clientRegistrationNumber = clientRegistrationNumber;
+    }
 }
+
+

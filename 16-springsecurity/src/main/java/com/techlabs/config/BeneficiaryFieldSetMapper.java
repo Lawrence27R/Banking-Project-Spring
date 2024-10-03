@@ -14,9 +14,10 @@ public class BeneficiaryFieldSetMapper implements FieldSetMapper<Beneficiary> {
         beneficiaries.setBeneficiaryName(fieldSet.readString("beneficiaryName"));
         beneficiaries.setBeneficiaryAccountNumber(fieldSet.readLong("beneficiaryAccountNumber"));
         beneficiaries.setBeneficiaryIfsc(fieldSet.readString("beneficiaryIfsc"));
-        beneficiaries.setBeneficiaryAmount(fieldSet.readDouble("beneficiaryAmount"));
+        beneficiaries.setBalance(fieldSet.readDouble("balance"));  // Updated to balance
         
         // Client field should be handled separately if needed since it's a relationship to another entity
         return beneficiaries;
     }
 }
+

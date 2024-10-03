@@ -21,42 +21,44 @@ import jakarta.transaction.Transactional;
 @Service 
 public class TransactionServiceImpl implements TransactionService { 
 
-    @Autowired 
-    private TransactionRepository transactionRepository; 
+	@Autowired 
+	private TransactionRepository transactionRepository; 
 
-    @Autowired 
-    private BeneficiaryRepository beneficiaryRepository; 
+	@Autowired 
+	private BeneficiaryRepository beneficiaryRepository; 
 
-    @Autowired 
-    private ClientRepository clientRepository; 
+	@Autowired 
+	private ClientRepository clientRepository; 
 
-    @Transactional 
-    @Override 
-    public Transaction createTransaction(TransactionDTO transactionDTO) {
-        // Validate input parameters 
-        if (transactionDTO.getAmount() <= 0) { 
-            throw new IllegalArgumentException("Amount must be positive."); 
-        } 
+	@Transactional 
+	@Override 
+	public Transaction createTransaction(TransactionDTO transactionDTO) {
+	    // Validate input parameters 
+	    if (transactionDTO.getAmount() <= 0) { 
+	        throw new IllegalArgumentException("Amount must be positive."); 
+	    } 
 
-        // Retrieve beneficiary and client 
-        Beneficiary beneficiary = beneficiaryRepository.findByBeneficiaryAccountNumber(transactionDTO.getBeneficiaryAccountNumber()) 
-                .orElseThrow(() -> new IllegalArgumentException("Beneficiary not found")); 
+	    // Retrieve beneficiary
+	    Beneficiary beneficiary = beneficiaryRepository.findByBeneficiaryAccountNumber(transactionDTO.getBeneficiaryAccountNumber()) 
+	            .orElseThrow(() -> new IllegalArgumentException("Beneficiary not found")); 
 
-        Client client = clientRepository.findByRegistrationNumber(transactionDTO.getRegistrationNumber()) 
-                .orElseThrow(() -> new IllegalArgumentException("Client not found")); 
+	    // Retrieve client using the client account number instead of registration number
+	    Client client = clientRepository.findByAccountNumber(transactionDTO.getClientAccountNumber()) 
+	            .orElseThrow(() -> new IllegalArgumentException("Client not found")); 
 
-        // Create and populate the Transaction entity 
-        Transaction transaction = new Transaction(); 
-        transaction.setSenderAcct(client.getAccountNumber()); 
-        transaction.setReceiverAcct(beneficiary.getBeneficiaryAccountNumber()); 
-        transaction.setAmount(transactionDTO.getAmount()); 
-        transaction.setTransaction(TransactionType.TRANSFER); // Set transaction type
-        transaction.setTimestamp(LocalDateTime.now()); // Set the current timestamp
-        transaction.setClient(client); // Set the client property
+	    // Create and populate the Transaction entity 
+	    Transaction transaction = new Transaction(); 
+	    transaction.setSenderAcct(client.getAccountNumber()); 
+	    transaction.setReceiverAcct(beneficiary.getBeneficiaryAccountNumber()); 
+	    transaction.setAmount(transactionDTO.getAmount()); 
+	    transaction.setTransaction(TransactionType.TRANSFER);
+	    transaction.setTimestamp(LocalDateTime.now()); 
+	    transaction.setClient(client); 
+	    
+	    // Save the transaction to the database 
+	    return transactionRepository.save(transaction); 
+	}
 
-        // Save the transaction to the database 
-        return transactionRepository.save(transaction); 
-    }
 
     @Override 
     public Optional<Transaction> findTransactionById(Integer transactionId) { 

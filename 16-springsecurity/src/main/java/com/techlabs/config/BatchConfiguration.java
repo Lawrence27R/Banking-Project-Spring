@@ -25,36 +25,38 @@ public class BatchConfiguration {
 
     // Employee Batch Configuration
 
-    @Bean
-    public JdbcCursorItemReader<Employee> employeeReader(DataSource dataSource) {
-        return new JdbcCursorItemReaderBuilder<Employee>()
-                .dataSource(dataSource)
-                .name("employeeReader")
-                .sql("SELECT employee_id, firstname, lastname, email, salary, accountnumber FROM employees")
-                .rowMapper((rs, rowNum) -> {
-                    Employee employee = new Employee();
-                    employee.setEmployeeId(rs.getInt("employee_id"));
-                    employee.setFirstname(rs.getString("firstname"));
-                    employee.setLastname(rs.getString("lastname"));
-                    employee.setEmail(rs.getString("email"));
-                    employee.setSalary(rs.getDouble("salary"));
-                    employee.setAccountnumber(rs.getLong("accountnumber"));
-                    return employee;
-                })
-                .build();
-    }
+	@Bean
+	public JdbcCursorItemReader<Employee> employeeReader(DataSource dataSource) {
+	    return new JdbcCursorItemReaderBuilder<Employee>()
+	            .dataSource(dataSource)
+	            .name("employeeReader")
+	            .sql("SELECT employee_id, firstname, lastname, email, salary, accountnumber, balance FROM employees") // Include balance in SQL query
+	            .rowMapper((rs, rowNum) -> {
+	                Employee employee = new Employee();
+	                employee.setEmployeeId(rs.getInt("employee_id"));
+	                employee.setFirstname(rs.getString("firstname"));
+	                employee.setLastname(rs.getString("lastname"));
+	                employee.setEmail(rs.getString("email"));
+	                employee.setSalary(rs.getDouble("salary"));
+	                employee.setAccountnumber(rs.getLong("accountnumber"));
+	                employee.setBalance(rs.getDouble("balance"));  // Set balance
+	                return employee;
+	            })
+	            .build();
+	}
 
-    @Bean
-    public FlatFileItemWriter<Employee> employeeWriter() {
-        return new FlatFileItemWriterBuilder<Employee>()
-                .name("employeeCsvWriter")
-                .resource(new FileSystemResource("C:/Users/lawrence.rodriques/OneDrive - Aurionpro Solutions Limited/Desktop/Output/employees.csv"))
-                .delimited()
-                .delimiter(",")
-                .names("firstname", "lastname", "email", "accountnumber", "salary")
-                .headerCallback(writer -> writer.write("firstname,lastname,email,accountnumber,salary"))
-                .build();
-    }
+	@Bean
+	public FlatFileItemWriter<Employee> employeeWriter() {
+	    return new FlatFileItemWriterBuilder<Employee>()
+	            .name("employeeCsvWriter")
+	            .resource(new FileSystemResource("C:/Users/lawrence.rodriques/OneDrive - Aurionpro Solutions Limited/Desktop/Output/employees.csv"))
+	            .delimited()
+	            .delimiter(",")
+	            .names("firstname", "lastname", "email", "accountnumber", "salary", "balance")  // Add balance field
+	            .headerCallback(writer -> writer.write("firstname,lastname,email,accountnumber,salary,balance"))  // Add balance to header
+	            .build();
+	}
+
 
     @Bean
     public Step employeeStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
@@ -81,13 +83,13 @@ public class BatchConfiguration {
         return new JdbcCursorItemReaderBuilder<Beneficiary>()
                 .dataSource(dataSource)
                 .name("beneficiaryReader")
-                .sql("SELECT beneficiary_name, beneficiary_account_number, beneficiary_ifsc, beneficiary_amount FROM beneficiaries")
+                .sql("SELECT beneficiary_name, beneficiary_account_number, beneficiary_ifsc, balance FROM beneficiaries")  // Updated query
                 .rowMapper((rs, rowNum) -> {
                     Beneficiary beneficiary = new Beneficiary();
                     beneficiary.setBeneficiaryName(rs.getString("beneficiary_name"));
                     beneficiary.setBeneficiaryAccountNumber(rs.getLong("beneficiary_account_number"));
                     beneficiary.setBeneficiaryIfsc(rs.getString("beneficiary_ifsc"));
-                    beneficiary.setBeneficiaryAmount(rs.getDouble("beneficiary_amount"));
+                    beneficiary.setBalance(rs.getDouble("balance"));  // Updated to balance
                     return beneficiary;
                 })
                 .build();
@@ -100,10 +102,11 @@ public class BatchConfiguration {
                 .resource(new FileSystemResource("C:/Users/lawrence.rodriques/OneDrive - Aurionpro Solutions Limited/Desktop/Output/beneficiaries.csv"))
                 .delimited()
                 .delimiter(",")
-                .names("beneficiaryName", "beneficiaryAccountNumber", "beneficiaryIfsc", "beneficiaryAmount")
-                .headerCallback(writer -> writer.write("beneficiaryName,beneficiaryAccountNumber,beneficiaryIfsc,beneficiaryAmount"))
+                .names("beneficiaryName", "beneficiaryAccountNumber", "beneficiaryIfsc", "balance")  // Updated to balance
+                .headerCallback(writer -> writer.write("beneficiaryName,beneficiaryAccountNumber,beneficiaryIfsc,balance"))  // Update header
                 .build();
     }
+
 
     @Bean
     public Step beneficiaryStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,

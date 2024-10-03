@@ -1,0 +1,33 @@
+spring.application.name=16-springsecurity
+spring.datasource.url=jdbc:mysql://localhost:3306/bankingdb
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+app-jwt-expiration-milliseconds=604800000
+app.jwt-secret = U46Cp45x9yp8I158LyyfVWl76w6pIRPtD0WWycrdoeE=
+logging.level.org.hibernate.SQL=debug
+logging.level.org.hibernate.orm.jdbc.bind=trace
+
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.generate-ddl=true
+
+spring.security.user.name=admin
+spring.security.user.password=admin
+spring.security.user.roles=ADMIN
+
+spring.jackson.serialization.FAIL_ON_EMPTY_BEANS=false
+
+spring.main.allow-bean-definition-overriding=true
+
+
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.MySQLDialect
+
+spring.batch.job.enabled=false
+spring.batch.jdbc.initialize-schema=always
+
+spring.sql.init.schema-locations=classpath:org/springframework/batch/core/schema-mysql.sql
+cloudinary.cloud_name=dknktcqs9
+cloudinary.api_key=518918461255191
+cloudinary.api_secret=muf3cMNOQUUTe8c4D9OJKihx5p8

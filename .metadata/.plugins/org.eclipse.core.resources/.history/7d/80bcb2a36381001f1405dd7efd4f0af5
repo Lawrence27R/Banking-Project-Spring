@@ -1,0 +1,94 @@
+package com.techlabs.config;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilder;
+import org.springframework.batch.core.configuration.annotation.StepBuilder;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.file.mapping.FieldSetMapper;
+import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.file.transform.LineAggregator;
+import org.springframework.batch.item.jdbc.JdbcBatchItemWriter;
+import org.springframework.batch.item.jdbc.builder.JdbcBatchItemWriterBuilder;
+import org.springframework.batch.item.support.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.launch.support.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import javax.sql.DataSource;
+import org.springframework.validation.BindException;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.core.step.tasklet.TaskletStep;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+
+
+@Configuration
+public class BatchTransactionConfiguration {
+
+    @Bean
+    public FlatFileItemReader<EmployeeTransaction> transactionReader() {
+        return new FlatFileItemReaderBuilder<EmployeeTransaction>()
+                .name("transactionCsvReader")
+                .resource(new FileSystemResource("C:/path/to/input/employee_transactions.csv"))
+                .delimited()
+                .names("employeeId", "amount", "transactionType")
+                .fieldSetMapper(new FieldSetMapper<EmployeeTransaction>() {
+                    @Override
+                    public EmployeeTransaction mapFieldSet(FieldSet fieldSet) throws BindException {
+                        EmployeeTransaction transaction = new EmployeeTransaction();
+                        Employee employee = new Employee();
+                        employee.setEmployeeId(fieldSet.readInt("employeeId"));  // Assuming this ID exists in the CSV
+                        transaction.setEmployee(employee);
+                        transaction.setAmount(fieldSet.readDouble("amount"));
+                        transaction.setTransactionType(TransactionType.valueOf(fieldSet.readString("transactionType")));
+                        return transaction;
+                    }
+                })
+                .build();
+    }
+
+    @Bean
+    public JdbcBatchItemWriter<EmployeeTransaction> transactionWriter(DataSource dataSource) {
+        return new JdbcBatchItemWriterBuilder<EmployeeTransaction>()
+                .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+                .sql("INSERT INTO employee_transactions (employee_id, transaction_amount, transaction_date, transaction_type) " +
+                        "VALUES (:employee.employeeId, :amount, :transactionDate, :transactionType)")
+                .dataSource(dataSource)
+                .build();
+    }
+
+    @Bean
+    public Step transactionStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
+                                FlatFileItemReader<EmployeeTransaction> transactionReader,
+                                JdbcBatchItemWriter<EmployeeTransaction> transactionWriter) {
+        return new StepBuilder("transactionStep", jobRepository)
+                .<EmployeeTransaction, EmployeeTransaction>chunk(10, transactionManager)
+                .reader(transactionReader)
+                .writer(transactionWriter)
+                .build();
+    }
+
+    @Bean
+    @Qualifier("processEmployeeTransactionsJob")
+    public Job processEmployeeTransactionsJob(JobRepository jobRepository, Step transactionStep) {
+        return new JobBuilder("processEmployeeTransactionsJob", jobRepository)
+                .start(transactionStep)
+                .build();
+    }
+
+    @Bean
+    public DataSourceTransactionManager transactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+}
+

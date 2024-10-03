@@ -1,0 +1,95 @@
+//package com.techlabs.config;
+//
+//import java.util.Map;
+//
+//import javax.sql.DataSource;
+//
+//import org.springframework.batch.core.Job;
+//import org.springframework.batch.core.Step;
+//import org.springframework.batch.core.job.builder.JobBuilder;
+//import org.springframework.batch.core.repository.JobRepository;
+//import org.springframework.batch.core.step.builder.StepBuilder;
+//import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+//import org.springframework.batch.item.database.JdbcBatchItemWriter;
+//import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
+//import org.springframework.batch.item.file.FlatFileItemReader;
+//import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+//import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+//import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+//import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+//import org.springframework.beans.factory.annotation.Qualifier;
+//import org.springframework.beans.propertyeditors.CustomNumberEditor;
+//import org.springframework.context.annotation.Bean;
+//import org.springframework.context.annotation.Configuration;
+//import org.springframework.core.io.FileSystemResource;
+//import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+//
+//import com.techlabs.entity.EmployeeTransaction;
+//
+//
+//@Configuration
+//public class BatchTransactionConfiguration {
+//
+//	@Bean
+//	public FlatFileItemReader<EmployeeTransaction> transactionReader() {
+//	    DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
+//	    lineTokenizer.setDelimiter(","); // Set the delimiter to comma
+//	    lineTokenizer.setNames("firstname", "lastname", "email", "accountnumber", "salary", "balance");
+//
+//	    BeanWrapperFieldSetMapper<EmployeeTransaction> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+//	    fieldSetMapper.setTargetType(EmployeeTransaction.class);
+//	    fieldSetMapper.setCustomEditors(Map.of(
+//	            Long.class, new CustomNumberEditor(Long.class, true) // If accountnumber is long
+//	    ));
+//
+//	    DefaultLineMapper<EmployeeTransaction> lineMapper = new DefaultLineMapper<>();
+//	    lineMapper.setLineTokenizer(lineTokenizer);
+//	    lineMapper.setFieldSetMapper(fieldSetMapper);
+//	    lineMapper.afterPropertiesSet();
+//
+//	    return new FlatFileItemReaderBuilder<EmployeeTransaction>()
+//	            .name("transactionCsvReader")
+//	            .resource(new FileSystemResource("C:\\Users\\lawrence.rodriques\\Downloads\\employee_transactions.csv"))
+//	            .linesToSkip(1) // Skip header line
+//	            .lineMapper(lineMapper)
+//	            .build();
+//	}
+//
+//
+//
+//
+//    @Bean
+//    public JdbcBatchItemWriter<EmployeeTransaction> transactionWriter(DataSource dataSource) {
+//        return new JdbcBatchItemWriterBuilder<EmployeeTransaction>()
+//                .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+//                .sql("INSERT INTO employee_transactions (employee_id, transaction_amount, transaction_date, transaction_type) " +
+//                        "VALUES (:employee.employeeId, :amount, :transactionDate, :transactionType)")
+//                .dataSource(dataSource)
+//                .build();
+//    }
+//
+//    @Bean
+//    public Step transactionStep(JobRepository jobRepository, DataSourceTransactionManager transactionManager,
+//                                FlatFileItemReader<EmployeeTransaction> transactionReader,
+//                                JdbcBatchItemWriter<EmployeeTransaction> transactionWriter) {
+//        return new StepBuilder("transactionStep", jobRepository)
+//                .<EmployeeTransaction, EmployeeTransaction>chunk(10, transactionManager)
+//                .reader(transactionReader)
+//                .writer(transactionWriter)
+//                .build();
+//    }
+//
+//    @Bean
+//    @Qualifier("processEmployeeTransactionsJob")
+//    public Job processEmployeeTransactionsJob(JobRepository jobRepository, Step transactionStep) {
+//        return new JobBuilder("processEmployeeTransactionsJob", jobRepository)
+//                .start(transactionStep)
+//                .build();
+//    }
+//
+//    @Bean
+//    public DataSourceTransactionManager transactionManager(DataSource dataSource) {
+//        return new DataSourceTransactionManager(dataSource);
+//    }
+//}
+//
